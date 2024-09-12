@@ -1,20 +1,14 @@
-pc1Table = [
-    57, 49, 41, 33, 25, 17, 9,
-    1, 58, 50, 42, 34, 26, 18,
-    10, 2, 59, 51, 43, 35, 27,
-    19, 11, 3, 60, 52, 44, 36,
-    63, 55, 47, 39, 31, 23, 15,
-    7, 62, 54, 46, 38, 30, 22,
-    14, 6, 61, 53, 45, 37, 29,
-    21, 13, 5, 28, 20, 12, 4
-]
+from global_values import *
 
-shiftTable = [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1]
 subKeys = []
 
 def getBinary(hex):
     # Convert hex to integer, then to binary, and pad with leading zeros to make it 64 bits
     return bin(int(hex, 16))[2:].zfill(64)
+
+def getDecimal(binary):
+    decimal = int(binary, 2)  # Convert binary to decimal
+    return decimal
     
 def getHex(binary):
     # Convert the binary string to an integer and then to a hexadecimal string
@@ -49,8 +43,27 @@ def getRightHalf(binary):
     rightHalf = binary[half:]  # Slicing from halfway to the end
     return rightHalf
 
+# def getMessageInput():
+#     message = input("Input your message: ")
+#     # try {
+        
+#     # } catch(e){
+
+#     # }
+#     if(message)
+#     return message
+
+def getKeyInput():
+    key = input("Input your key: ")
+    return key
+
 # Defining main function
 def main():
+
+    # message = input("Input your message: ")
+    # key = input("Input you key: ")
+    # print(message)
+    # print(key)
     message = "0123456789ABCDEF"
     key = "133457799BBCDFF1"
     # print(getBinary(key))
@@ -60,6 +73,8 @@ def main():
     print("1111000011001100101010101111\n")
     print(getRightHalf(rearrangeBits(pc1Table, getBinary(key))))
     print("0101010101100110011110001111")
+
+    print(s1[0])
     # print("11110000110011001010101011110101010101100110011110001111")
 
 
