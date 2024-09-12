@@ -1,3 +1,6 @@
+# The key value used to encrypt message
+key = '133457799BBCDFF1'
+
 # 2D array of sub key tables for s1-s8
 s1 = [
     [14,  4, 13,  1,  2, 15, 11,  8,  3, 10,  6, 12,  5,  9,  0,  7],
