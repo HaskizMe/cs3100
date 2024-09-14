@@ -66,36 +66,93 @@ def getSubKeys(c0, d0):
         subKeyN= rearrangeBits(pc2table, cN + dN) # concatenates c sub n and d sub n and rearranges the bits using pc2 table
         subKeys.append(subKeyN) # Appends the sub key to sub keys list
 
+# The f box algorithm
+def fBox(rightSideCurrent, subKey):
+    # get expansion
+    expanded = rearrangeBits(expansionTable, rightSideCurrent)
+
+    # Convert the binary strings to integers
+    a_int = int(subKeys[subKey], 2)
+    b_int = int(expanded, 2)
+
+    # Perform XOR
+    result = a_int ^ b_int
+
+    # Convert the result back to a binary string
+    result_bin = bin(result)[2:].zfill(48)
+
+    finalResultBin = ''
+
+    # An array of 2D arrays 
+    s_boxes = [s1, s2, s3, s4, s5, s6, s7, s8]
+
+    # Loop through the binary string in 6-bit segments
+    for i in range(0, len(result_bin), 6):
+        # Grab a 6-bit segment
+        segment = result_bin[i:i+6]
+
+        # Construct the row and column strings based on the bits from the segment
+        rowNumber = int((segment[0] + segment[5]), 2)  # First and last bit for row
+        columnNumber = int(segment[1:5], 2)            # Bits from position 1 to 4 for column
+
+        # Access the appropriate s-box using the index
+        s_box = s_boxes[i // 6]  # This will switch to the next s-box in each iteration
+
+        # Get the value from the s-box
+        newSBoxValueDecimal = s_box[rowNumber][columnNumber]
+        newSBoxValueBin = bin(newSBoxValueDecimal)[2:].zfill(4)  # Convert to 4-bit binary
+
+        # Concatenate binary number
+        finalResultBin = finalResultBin + newSBoxValueBin
+
+    # Rearrange bits
+    finalResultBin = rearrangeBits(fBoxPermutation, finalResultBin)
+    return finalResultBin
+
+
+# Does 16 encoding rounds on message
+def doRounds(l0, r0):
+    leftSideCurrent = l0
+    rightSideCurrent = r0
+    rightSidePlus1 = 0
+
+    # A loop to loop 16 times for the encoding rounds
+    for i in range(16):
+        fBoxResult = int(fBox(rightSideCurrent, i),2) 
+        rightSidePlus1Decimal = int(leftSideCurrent, 2) ^ fBoxResult # XOR the left side and fbox result
+        rightSidePlus1 = bin(rightSidePlus1Decimal)[2:].zfill(32) # Convert back to binary format
+
+        leftSideCurrent = rightSideCurrent # Update current left side value
+        rightSideCurrent = rightSidePlus1 # Update current right value
+
+    finalRoundBin = rightSideCurrent + leftSideCurrent # Flip sides on final round
+    finalRoundBin = rearrangeBits(finalPermutation, finalRoundBin) # Do final permutation
+    return getHex(finalRoundBin)
+
 # Defining main function
 def main():
-    # message = getMessageInput() # This gets user input
-    # print(message)
-    message = "0123456789ABCDEF"
-    # print(getBinary(message))
-    # key = "133457799BBCDFF1"
-    # print(getBinary(key))
-    # print(findBit(getBinary(key), 1))
+    message = getMessageInput() # This gets user input
+
+    # 
     kPlus = rearrangeBits(pc1Table, getBinary(key))
     c0 = getLeftHalf(kPlus)
     d0 = getRightHalf(kPlus)
 
     getSubKeys(c0, d0)
 
-    initialPermutedMessage = rearrangeBits(initialPermutationTable, getBinary(message))
+    initialPermutedMessage = rearrangeBits(initialPermutationTable, message)
+
     l0 = getLeftHalf(initialPermutedMessage)
     r0 = getRightHalf(initialPermutedMessage)
-    # print(l0)
-    # print(r0)
-    #print(initialPermutedMessage)
-    # for i in range(len(subKeys)):
-    #     print(f"i: {i+1} {subKeys[i]}\n")
-    #print(subKeys)
-    # print("11110000110011001010101011110101010101100110011110001111")
+    cipherText = doRounds(l0, r0)
+    print(cipherText)
+
 
 
 
 # Entry point for program
 if __name__=="__main__":
+    # https://page.math.tu-berlin.de/~kant/teaching/hess/krypto-ws2006/des.htm
     # Step 1: Create 16 sub keys, each of which is 48-bits long:
         # Get k+ by taking key and rearrange using pc1 table
         # Get the left and right half of k+
@@ -105,5 +162,6 @@ if __name__=="__main__":
     # Step 2: Encode each 64-bit block of data:
         # Rearrange message with initial permutation table 
         # Split rearranged message in half getting both the left and right half l0 and r0
-
+        # Do 16 rounds of encoding
+        # on the final round flip left and right side and then apply final permutation and convert to hex
     main()
